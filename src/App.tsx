@@ -8,6 +8,7 @@ import DeployWizard from './pages/DeployWizard'
 import BotUsers from './pages/BotUsers'
 import BotConfig from './pages/BotConfig'
 import ActivityLogs from './pages/ActivityLogs'
+import SubUsers from './pages/SubUsers'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children }: { children?: React.ReactNode }) {
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="bot-users" element={<BotUsers />} />
         <Route path="bot-config" element={<BotConfig />} />
         <Route path="logs" element={<ActivityLogs />} />
+        <Route path="sub-users" element={<SubUsers />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

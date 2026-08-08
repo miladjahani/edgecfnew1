@@ -58,3 +58,45 @@ export interface BotConfig {
   created_at: string
   updated_at: string
 }
+
+export interface AdminProfile {
+  id: string
+  email: string
+  is_super_admin: boolean
+  created_at: string
+}
+
+export interface SubUser {
+  id: string
+  admin_id: string
+  username: string
+  password: string
+  uuid: string
+  data_limit_gb: number
+  time_limit_days: number
+  daily_limit_gb: number
+  expiration_date: string | null
+  is_active: boolean
+  created_at: string
+  usage_gb: number
+  last_reset: string
+}
+
+export interface UserConfig {
+  id: string
+  user_id: string
+  protocol: 'grpc' | 'ws' | 'xhttps' | 'h2'
+  config_json: Record<string, unknown>
+  subscription_link: string | null
+  last_used: string | null
+  created_at: string
+}
+
+export interface UserLimits {
+  is_expired: boolean
+  is_over_data_limit: boolean
+  is_over_daily_limit: boolean
+  remaining_days: number
+  remaining_data_gb: number
+  remaining_daily_gb: number
+}
