@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   UserPlus,
+  UserCog,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -20,6 +21,7 @@ const navItems = [
   { to: '/tokens', label: 'توکن‌ها', icon: KeyRound },
   { to: '/deploy', label: 'استقرار جدید', icon: UserPlus },
   { to: '/deployments', label: 'ورکرها', icon: Cloud },
+  { to: '/sub-users', label: 'کاربران فرعی', icon: UserCog },
   { to: '/bot-config', label: 'ربات تلگرام', icon: Bot },
   { to: '/bot-users', label: 'کاربران ربات', icon: Users },
   { to: '/logs', label: 'لاگ‌ها', icon: ScrollText },
