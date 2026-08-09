@@ -1,1 +1,24 @@
-Nothing should be ignored based on the provided file changes. The added file 'src/pages/GRoute.tsx' is a source code file and should not be added to .gitignore.
+```
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# IDE
+.vscode/
+
+# Logs
+*.log
+
+# TypeScript
+*.tsbuildinfo
+
+# Package lock
+package-lock.json
+```
