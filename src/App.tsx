@@ -9,6 +9,7 @@ import BotUsers from './pages/BotUsers'
 import BotConfig from './pages/BotConfig'
 import ActivityLogs from './pages/ActivityLogs'
 import SubUsers from './pages/SubUsers'
+import GRoute from './pages/GRoute'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children }: { children?: React.ReactNode }) {
@@ -27,7 +28,7 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/auth" element={user ? <Navigate to="/" replace /> : <AuthPage />} />
+      <Route path="/auth" element={user ? <Navigate to="/auth" replace /> : <AuthPage />} />
       <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="tokens" element={<Tokens />} />
@@ -37,6 +38,7 @@ export default function App() {
         <Route path="bot-config" element={<BotConfig />} />
         <Route path="logs" element={<ActivityLogs />} />
         <Route path="sub-users" element={<SubUsers />} />
+        <Route path="groute" element={<GRoute />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
