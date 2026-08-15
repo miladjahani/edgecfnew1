@@ -1,24 +1,36 @@
 ```
+# TypeScript/JavaScript build artifacts
+*.tsbuildinfo
+
 # Dependencies
 node_modules/
 
-# Build outputs
-dist/
+# Logs and temp files
+*.log
+*.tmp
 
 # Environment
 .env
 .env.local
 *.env.*
 
-# IDE
+# Editors
 .vscode/
+.idea/
 
-# Logs
-*.log
+# OS generated files
+.DS_Store
+Thumbs.db
 
-# TypeScript
-*.tsbuildinfo
+# Coverage reports
+coverage/
+htmlcov/
+*.coverage
 
-# Package lock
-package-lock.json
+# Python cache (if applicable)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
 ```
