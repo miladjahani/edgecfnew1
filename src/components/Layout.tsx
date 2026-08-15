@@ -14,6 +14,7 @@ import {
   UserPlus,
   UserCog,
   Smartphone,
+  Wand2,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -24,6 +25,7 @@ const navItems = [
   { to: '/deployments', label: 'ورکرها', icon: Cloud },
   { to: '/sub-users', label: 'کاربران فرعی', icon: UserCog },
   { to: '/groute', label: 'GRoute VPN', icon: Smartphone },
+  { to: '/optimizer', label: 'بهینه‌ساز کانفیگ', icon: Wand2 },
   { to: '/bot-config', label: 'ربات تلگرام', icon: Bot },
   { to: '/bot-users', label: 'کاربران ربات', icon: Users },
   { to: '/logs', label: 'لاگ‌ها', icon: ScrollText },
