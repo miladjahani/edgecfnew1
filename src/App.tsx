@@ -10,6 +10,7 @@ import BotConfig from './pages/BotConfig'
 import ActivityLogs from './pages/ActivityLogs'
 import SubUsers from './pages/SubUsers'
 import GRoute from './pages/GRoute'
+import Optimizer from './pages/Optimizer'
 import Layout from './components/Layout'
 
 function ProtectedRoute({ children }: { children?: React.ReactNode }) {
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="logs" element={<ActivityLogs />} />
         <Route path="sub-users" element={<SubUsers />} />
         <Route path="groute" element={<GRoute />} />
+        <Route path="optimizer" element={<Optimizer />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
