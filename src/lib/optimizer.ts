@@ -34,38 +34,61 @@ export interface OptimizerOptions {
 }
 
 export async function fetchSubscriptionContent(url: string): Promise<string> {
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept': '*/*'
-      }
-    });
+  // لیست پروکسی‌های CORS برای دور زدن محدودیت‌ها
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    `https://thingproxy.freeboard.io/fetch/${encodeURIComponent(url)}`
+  ];
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+  let lastError: Error | null = null;
 
-    const text = await response.text();
-    
-    // بررسی اینکه آیا پاسخ Base64 است (فرمت رایج ساب‌سکریپشن)
+  for (const proxyUrl of proxies) {
     try {
-      // حذف کاراکترهای اضافی و تست Base64
-      const cleanText = text.trim().replace(/\s/g, '');
-      if (/^[A-Za-z0-9+/=]+$/.test(cleanText) && cleanText.length % 4 === 0) {
-        const decoded = atob(cleanText);
-        if (decoded.includes('://')) {
-          return decoded;
-        }
-      }
-    } catch {}
+      const response = await fetch(proxyUrl, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': '*/*',
+          'Accept-Language': 'en-US,en;q=0.9'
+        },
+        cache: 'no-cache'
+      });
 
-    return text;
-  } catch (error) {
-    console.error('Error fetching subscription:', error);
-    throw new Error('خطا در دریافت لینک اشتراک. لطفاً اتصال اینترنت یا صحت لینک را بررسی کنید.');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const text = await response.text();
+      
+      if (!text || text.trim().length === 0) {
+        throw new Error('پاسخ خالی دریافت شد');
+      }
+
+      // بررسی اینکه آیا پاسخ Base64 است (فرمت رایج ساب‌سکریپشن)
+      try {
+        // حذف کاراکترهای اضافی و تست Base64
+        const cleanText = text.trim().replace(/\s/g, '');
+        if (/^[A-Za-z0-9+/=]+$/.test(cleanText) && cleanText.length > 0 && cleanText.length % 4 === 0) {
+          const decoded = atob(cleanText);
+          if (decoded.includes('://')) {
+            return decoded;
+          }
+        }
+      } catch {}
+
+      return text;
+    } catch (error) {
+      lastError = error as Error;
+      console.warn(`Proxy failed: ${proxyUrl}`, error);
+      // ادامه حلقه برای تلاش با پروکسی بعدی
+    }
   }
+
+  throw new Error(lastError 
+    ? `خطا در دریافت لینک اشتراک: ${lastError.message}. لطفاً اتصال اینترنت یا صحت لینک را بررسی کنید.`
+    : 'خطای ناشناخته در دریافت اشتراک');
 }
 
 export function parseRawInput(raw: string): string[] {
