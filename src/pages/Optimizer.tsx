@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { optimizeNodeUri, buildXrayProfileJson, parseRawInput, type OptimizerOptions } from '../lib/optimizer'
-import { Wand2, Copy, Download, FileJson, FileType, Settings2, Check, AlertCircle } from 'lucide-react'
+import { optimizeNodeUri, buildXrayProfileJson, parseRawInput, fetchSubscriptionContent, type OptimizerOptions } from '../lib/optimizer'
+import { Wand2, Copy, Download, FileJson, FileType, Settings2, Check, AlertCircle, Link } from 'lucide-react'
 
 export default function Optimizer() {
   const [input, setInput] = useState('')
@@ -12,25 +12,49 @@ export default function Optimizer() {
   const [optimizedJson, setOptimizedJson] = useState('')
   const [activeTab, setActiveTab] = useState<'text' | 'json'>('text')
   const [copied, setCopied] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleOptimize = () => {
-    const configs = parseRawInput(input)
-    if (configs.length === 0) return
+  const handleOptimize = async () => {
+    if (!input.trim()) return
+    
+    setIsLoading(true)
+    setError('')
+    
+    try {
+      let rawContent = input.trim()
+      
+      // اگر ورودی یک لینک اشتراک است، محتوا را دریافت کن
+      if (rawContent.startsWith('http://') || rawContent.startsWith('https://')) {
+        rawContent = await fetchSubscriptionContent(rawContent)
+      }
+      
+      const configs = parseRawInput(rawContent)
+      if (configs.length === 0) {
+        setError('هیچ کانفیگی یافت نشد.')
+        setIsLoading(false)
+        return
+      }
 
-    const options: OptimizerOptions = {
-      cleanIp: cleanIp || undefined,
-      fingerprint: fingerprint || undefined,
-      enableFragment,
-      enableCipherSuites,
+      const options: OptimizerOptions = {
+        cleanIp: cleanIp || undefined,
+        fingerprint: fingerprint || undefined,
+        enableFragment,
+        enableCipherSuites,
+      }
+
+      // خروجی تکست
+      const optimizedUris = configs.map(uri => optimizeNodeUri(uri, options))
+      setOptimizedText(optimizedUris.join('\n'))
+
+      // خروجی جیسون
+      const jsonConfig = buildXrayProfileJson(configs, options)
+      setOptimizedJson(JSON.stringify(jsonConfig, null, 2))
+    } catch (err: any) {
+      setError(err.message || 'خطا در بهینه‌سازی کانفیگ‌ها')
+    } finally {
+      setIsLoading(false)
     }
-
-    // خروجی تکست
-    const optimizedUris = configs.map(uri => optimizeNodeUri(uri, options))
-    setOptimizedText(optimizedUris.join('\n'))
-
-    // خروجی جیسون
-    const jsonConfig = buildXrayProfileJson(configs, options)
-    setOptimizedJson(JSON.stringify(jsonConfig, null, 2))
   }
 
   const handleCopy = async () => {
@@ -66,10 +90,14 @@ export default function Optimizer() {
       <div className="glass-card p-6">
         <div className="flex items-center justify-between mb-4">
           <label className="text-white font-medium flex items-center gap-2">
-            <FileType className="w-5 h-5 text-brand-400" />
-            ورودی کانفیگ‌ها
+            {input.trim().startsWith('http://') || input.trim().startsWith('https://') ? (
+              <Link className="w-5 h-5 text-brand-400" />
+            ) : (
+              <FileType className="w-5 h-5 text-brand-400" />
+            )}
+            {input.trim().startsWith('http://') || input.trim().startsWith('https://') ? 'لینک اشتراک' : 'ورودی کانفیگ‌ها'}
           </label>
-          {configCount > 0 && (
+          {configCount > 0 && !input.trim().startsWith('http') && (
             <span className="text-xs text-brand-400 bg-brand-500/10 px-3 py-1 rounded-full border border-brand-500/30">
               {configCount} کانفیگ شناسایی شد
             </span>
@@ -78,7 +106,11 @@ export default function Optimizer() {
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="لینک‌های vless:// یا trojan:// را اینجا وارد کنید (هر لینک در یک خط)"
+          placeholder={
+            input.trim().startsWith('http://') || input.trim().startsWith('https://')
+              ? 'لینک اشتراک خود را اینجا وارد کنید (مثلاً: https://example.com/sub)'
+              : 'لینک‌های vless:// یا trojan:// را اینجا وارد کنید (هر لینک در یک خط) یا لینک اشتراک بدهید'
+          }
           className="w-full h-48 bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-white text-sm font-mono resize-none focus:outline-none focus:border-brand-500 transition-colors"
           dir="ltr"
         />
@@ -146,12 +178,29 @@ export default function Optimizer() {
         {/* Optimize Button */}
         <button
           onClick={handleOptimize}
-          disabled={!input.trim()}
+          disabled={!input.trim() || isLoading}
           className="w-full mt-6 btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Wand2 className="w-5 h-5" />
-          بهینه‌سازی کانفیگ‌ها
+          {isLoading ? (
+            <>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              در حال دریافت و بهینه‌سازی...
+            </>
+          ) : (
+            <>
+              <Wand2 className="w-5 h-5" />
+              بهینه‌سازی کانفیگ‌ها
+            </>
+          )}
         </button>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-300">{error}</p>
+          </div>
+        )}
       </div>
 
       {/* Output Section */}

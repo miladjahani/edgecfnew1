@@ -33,11 +33,51 @@ export interface OptimizerOptions {
   enableCipherSuites?: boolean;
 }
 
+export async function fetchSubscriptionContent(url: string): Promise<string> {
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': '*/*'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const text = await response.text();
+    
+    // بررسی اینکه آیا پاسخ Base64 است (فرمت رایج ساب‌سکریپشن)
+    try {
+      // حذف کاراکترهای اضافی و تست Base64
+      const cleanText = text.trim().replace(/\s/g, '');
+      if (/^[A-Za-z0-9+/=]+$/.test(cleanText) && cleanText.length % 4 === 0) {
+        const decoded = atob(cleanText);
+        if (decoded.includes('://')) {
+          return decoded;
+        }
+      }
+    } catch {}
+
+    return text;
+  } catch (error) {
+    console.error('Error fetching subscription:', error);
+    throw new Error('خطا در دریافت لینک اشتراک. لطفاً اتصال اینترنت یا صحت لینک را بررسی کنید.');
+  }
+}
+
 export function parseRawInput(raw: string): string[] {
   let text = raw.trim();
   if (!text) return [];
 
-  // بررسی دیکود Base64 برای ساب‌سکریپشن‌های یک‌تکه
+  // اگر ورودی یک URL باشد (شروع با http)، آن را برنمی‌گردانیم تا توسط تابع اصلی پردازش شود
+  if (text.startsWith('http://') || text.startsWith('https://')) {
+    return [text]; 
+  }
+
+  // بررسی دیکود Base64 برای ساب‌سکریپشن‌های یک‌تکه (غیر URL)
   if (!text.includes('\n') && !text.startsWith('vless://') && !text.startsWith('trojan://')) {
     try {
       const decoded = atob(text);
